@@ -21,6 +21,10 @@ printUpdatingMessageFor "global PNPM"
 pnpm update -g && pnpm upgrade -g
 PNPM_EXIT_CODE=$?
 
+printUpdatingMessageFor "global Yarn"
+yarn global upgrade
+YARN_EXIT_CODE=$?
+
 printUpdatingMessageFor brew
 brew update && brew upgrade
 BREW_EXIT_CODE=$?
@@ -38,4 +42,5 @@ printStatusMessage() {
 
 printStatusMessage $NPM_EXIT_CODE NPM
 printStatusMessage $PNPM_EXIT_CODE PNPM
+printStatusMessage $YARN_EXIT_CODE Yarn
 printStatusMessage $BREW_EXIT_CODE Brew
