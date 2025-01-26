@@ -21,10 +21,6 @@ printUpdatingMessageFor "global PNPM"
 pnpm update -g && pnpm upgrade -g
 PNPM_EXIT_CODE=$?
 
-printUpdatingMessageFor "global Yarn"
-yarn global upgrade
-YARN_EXIT_CODE=$?
-
 printUpdatingMessageFor brew
 brew update && brew upgrade
 BREW_EXIT_CODE=$?
@@ -34,13 +30,13 @@ echo ""
 printStatusMessage() {
   if [ $1 -ne 0 ]
   then
-    echo "❌ - ${COLOR_BOLD}${2}${COLOR_RESET} failed"
+    echo "${COLOR_BOLD}${2}${COLOR_RESET} failed"
   else
-    echo "✅ - ${COLOR_BOLD}${2}${COLOR_RESET} updated"
+    echo "${COLOR_BOLD}${2}${COLOR_RESET} updated"
   fi
 }
 
 printStatusMessage $NPM_EXIT_CODE NPM
 printStatusMessage $PNPM_EXIT_CODE PNPM
-printStatusMessage $YARN_EXIT_CODE Yarn
 printStatusMessage $BREW_EXIT_CODE Brew
+
