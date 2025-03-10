@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-. $(dirname "$0")/shared-variables
+. $(dirname "$0")/shared_variables
 
 local valid_package_managers=("npm" "pnpm" "brew" "yum")
 
