@@ -2,41 +2,118 @@
 
 . $(dirname "$0")/shared-variables.sh
 
-printUpdatingMessageFor() {
-  if $FIRST_PRINT
-  then
-    FIRST_PRINT=false
+local valid_package_managers=("npm" "pnpm" "brew" "yum")
+
+print_usage() {
+  local to_error_stream=$1
+  local usage_message="usage: update_packages [package_managers]\n"
+  usage_message+="  package_managers:\n"
+  
+  for ((
+    package_manager_index=1;
+    package_manager_index <= ${#valid_package_managers};
+    ++package_manager_index
+  )) {
+    usage_message+="    ${valid_package_managers[$package_manager_index]}\n"
+  }
+
+  if [[ ${to_error_stream} == 1 ]]; then
+    printf "${usage_message}" >&2
   else
-    echo ""
-  fi
-
-  echo "${COLOR_BLUE}Updating/upgrading ${COLOR_GREEN}${1}${COLOR_BLUE} packages${COLOR_RESET}"
-}
-
-printUpdatingMessageFor "global NPM"
-npm update -g && npm upgrade -g
-NPM_EXIT_CODE=$?
-
-printUpdatingMessageFor "global PNPM"
-pnpm update -g && pnpm upgrade -g
-PNPM_EXIT_CODE=$?
-
-printUpdatingMessageFor brew
-brew update && brew upgrade
-BREW_EXIT_CODE=$?
-
-echo ""
-
-printStatusMessage() {
-  if [ $1 -ne 0 ]
-  then
-    echo "${COLOR_BOLD}${2}${COLOR_RESET} failed"
-  else
-    echo "${COLOR_BOLD}${2}${COLOR_RESET} updated"
+    printf "${usage_message}"
   fi
 }
 
-printStatusMessage $NPM_EXIT_CODE NPM
-printStatusMessage $PNPM_EXIT_CODE PNPM
-printStatusMessage $BREW_EXIT_CODE Brew
+print_updating_message_for() {
+  printf "${COLOR_BLUE}Updating/upgrading ${COLOR_GREEN}${1}${COLOR_BLUE} packages${COLOR_RESET}\n"
+}
+
+print_status_message() {
+  if [[ $1 -ne 0 ]]; then
+    printf "- ${COLOR_BOLD}${2}${COLOR_RESET}\tfailed\n"
+  else
+    printf "+ ${COLOR_BOLD}${2}${COLOR_RESET}\tupdated\n"
+  fi
+}
+
+update_packages() {
+  if [[ $# == 0 ]]; then
+    print_usage 0
+    exit 0
+  fi
+
+  for ((i = 1; i <= $#; ++i)) {
+    local valid_parameter=0
+
+    for ((
+      package_manager_index = 1;
+      package_manager_index <= ${#valid_package_managers[@]};
+      ++package_manager_index
+    )) {
+      if [[
+        "$@[i]" == "${valid_package_managers[$package_manager_index]}"
+      ]]; then
+        valid_parameter=1
+        break
+      fi
+    }
+
+    if [[ ${valid_parameter} == 0 ]]; then
+      printf "Unknown package manager: $@[i]\n" >&2
+      print_usage 1
+      exit 1
+    fi
+  }
+
+  local exit_codes=()
+
+  for ((
+    parameter_index = 1;
+    parameter_index <= $#;
+    ++parameter_index
+  )) {
+    local package_manager="$@[parameter_index]"
+
+    if [[ ${parameter_index} -gt 1 ]]; then
+      printf "\n"
+    fi
+ 
+    print_updating_message_for "${package_manager}"
+    exit_codes+=("${package_manager}")
+
+    case "${package_manager}" in
+      "npm")
+        npm update -g && npm upgrade -g
+        exit_codes+=($?)
+      ;;
+      "pnpm")
+        pnpm update -g && pnpm upgrade -g
+        exit_codes+=($?)
+      ;;
+      "brew")
+        brew update && brew upgrade
+        exit_codes+=($?)
+      ;;
+      "yum")
+        yum update && yum upgrade
+        exit_codes+=($?)
+      ;;
+    esac
+  }
+
+  printf "\n"
+  
+  for ((
+    exit_codes_index = 1;
+    exit_codes_index <= ${#exit_codes};
+    exit_codes_index = $((${exit_codes_index} + 2))
+  )) {
+    local package_manager=${exit_codes[${exit_codes_index}]}
+    local exit_code=${exit_codes[$((${exit_codes_index} + 1))]}
+    
+    print_status_message ${exit_code} "${package_manager}"
+  }
+}
+
+update_packages $@
 
