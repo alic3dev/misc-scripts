@@ -73,9 +73,9 @@ fi
 printStatusMessage() {
   if [ $1 -ne 0 ]
   then
-    echo "${COLOR_BOLD}${2}${COLOR_RESET} failed"
+    echo "- ${COLOR_BOLD}${2}${COLOR_RESET}\tfailed"
   else
-    echo "${COLOR_BOLD}${2}${COLOR_RESET} updated"
+    echo "+ ${COLOR_BOLD}${2}${COLOR_RESET}\tupdated"
   fi
 }
 
