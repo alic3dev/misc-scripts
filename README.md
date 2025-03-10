@@ -22,3 +22,5 @@ a collection of miscellaneous scripts
 - - updates global packages
 - - - supports `npm`|`pnpm`|`brew`|`yum`
 
+> ©️ Copyright "alic3dev (2024)" - All rights reserved
+
